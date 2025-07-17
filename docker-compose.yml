@@ -1,0 +1,40 @@
+ 
+services:
+
+  mongo:
+    image: mongodb/mongodb-community-server:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - data:/data/db
+
+
+  user_services:
+    build: ./user_services
+    container_name: user_services
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongo
+    volumes:
+      - ./user_services:/app
+    command: nodemon index.js
+
+
+
+  task_services:
+    build: ./task_services
+    container_name: task_services
+    ports:
+      - "3002:3002"
+    depends_on:
+      - mongo
+    volumes:
+      - ./task_services:/app
+    command: nodemon index.js
+
+volumes:
+  data:
+  user_services:
+  task_services:
