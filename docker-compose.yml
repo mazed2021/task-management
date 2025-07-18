@@ -1,4 +1,5 @@
- 
+version: '3.9'
+
 services:
 
   mongo:
@@ -9,6 +10,12 @@ services:
     volumes:
       - data:/data/db
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
 
   user_services:
     build: ./user_services
@@ -19,9 +26,8 @@ services:
       - mongo
     volumes:
       - ./user_services:/app
+      - /app/node_modules  # prevents host from overwriting container’s node_modules
     command: nodemon index.js
-
-
 
   task_services:
     build: ./task_services
@@ -30,11 +36,24 @@ services:
       - "3002:3002"
     depends_on:
       - mongo
+      - rabbitmq
     volumes:
       - ./task_services:/app
+      - /app/node_modules
+    command: nodemon index.js
+
+  notification_services:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "3003:3003"
+    depends_on:
+      - mongo
+      - rabbitmq
+    volumes:
+      - ./notification-service:/app
+      - /app/node_modules
     command: nodemon index.js
 
 volumes:
   data:
-  user_services:
-  task_services:
